@@ -1,0 +1,26 @@
+{
+  "name": "simple-http-file-server",
+  "version": "1.0.0",
+  "description": "A simple HTTP static file server",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/catamphetamine/simple-http-file-server.git"
+  },
+  "keywords": [
+    "http",
+    "file",
+    "server",
+    "static"
+  ],
+  "author": "catamphetamine",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/catamphetamine/simple-http-file-server/issues"
+  },
+  "homepage": "https://github.com/catamphetamine/simple-http-file-server#readme"
+}
