@@ -60,7 +60,7 @@ function access_denied(response)
 // 	return true
 // }
 
-function find_file(file_path, index_file_name, options, callback, status)
+function find_file(file_path, index_file_name, root, options, callback, status)
 {
 	// Найти запрошенный файл на диске
 	fs.stat(file_path, (error, stats) =>
@@ -75,7 +75,7 @@ function find_file(file_path, index_file_name, options, callback, status)
 			} else {
 				// if (options['500'] && status !== 500) {
 				// 	console.error(error)
-				// 	return find_file(path.resolve(root_file_path, options['500']), null, options, callback, 500)
+				// 	return find_file(path.resolve(root, options['500']), null, root, options, callback, 500)
 				// }
 				return callback(error)
 			}
@@ -84,7 +84,7 @@ function find_file(file_path, index_file_name, options, callback, status)
 		else if (!stats.isFile())
 		{
 			if (stats.isDirectory() && index_file_name) {
-				return find_file(path.resolve(file_path, index_file_name), null, options, callback, status)
+				return find_file(path.resolve(file_path, index_file_name), null, root, options, callback, status)
 			} else {
 				not_found = true
 			}
@@ -93,9 +93,9 @@ function find_file(file_path, index_file_name, options, callback, status)
 		if (not_found)
 		{
 			if (options.default) {
-				return find_file(path.resolve(root_file_path, options.default), null, options, callback)
+				return find_file(path.resolve(root, options.default), null, root, options, callback)
 			} else if (options['404'] && status !== 404) {
-				return find_file(path.resolve(root_file_path, options['404']), null, options, callback, 404)
+				return find_file(path.resolve(root, options['404']), null, root, options, callback, 404)
 			} else {
 				return callback()
 			}
@@ -134,7 +134,7 @@ function startServer({ root, port, options }, callback)
   		return access_denied(response)
   	}
 
-  	find_file(file_path, options.index, options, (error, file_path, stats, status) =>
+  	find_file(file_path, options.index, root, options, (error, file_path, stats, status) =>
   	{
   		if (error) {
   			return server_error(error, response)
