@@ -106,9 +106,9 @@ function find_file(file_path, index_file_name, root, options, callback, status)
 }
 
 // Вебсервер
-function startServer({ root, port, options }, callback)
+function createServer({ root, options }, callback)
 {
-  http.createServer(function(request, response)
+  const server = http.createServer(function(request, response)
   {
   	// Принимает только HEAD и GET
   	if (request.method !== 'HEAD' && request.method !== 'GET')
@@ -178,20 +178,7 @@ function startServer({ root, port, options }, callback)
   			.pipe(response)
   	})
   })
-  .listen(port, callback)
 }
 
-module.exports = startServer
-module.exports['default'] = startServer
-
-startServer
-({
-  root : path.resolve(__dirname, process.argv[2] || '.'),
-  port : parseInt(process.argv[3] || '8888'),
-  options :
-  {
-    index : 'index.html',
-    ...JSON.parse(process.argv[4] || '{}')
-  }
-},
-() => console.log('Static file server listening at http://localhost:' + (process.argv[3] || '8888')));
+module.exports = createServer
+module.exports['default'] = createServer

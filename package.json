@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "prepublish": "crlf --set=LF bin/*"
   },
   "repository": {
     "type": "git",
@@ -22,5 +23,8 @@
   "bugs": {
     "url": "https://github.com/catamphetamine/simple-http-file-server/issues"
   },
-  "homepage": "https://github.com/catamphetamine/simple-http-file-server#readme"
+  "homepage": "https://github.com/catamphetamine/simple-http-file-server#readme",
+  "bin": {
+    "file-server": "./bin/file-server.js"
+  }
 }
