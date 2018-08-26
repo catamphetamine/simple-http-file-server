@@ -108,76 +108,78 @@ function find_file(file_path, index_file_name, root, options, callback, status)
 // Вебсервер
 function createServer({ root, options }, callback)
 {
-  const server = http.createServer(function(request, response)
-  {
-  	// Принимает только HEAD и GET
-  	if (request.method !== 'HEAD' && request.method !== 'GET')
-  	{
-  		response.statusCode = 405
-  		return response.end()
-  	}
+	options = options || {}
 
-  	// Взять из запрошенного URL'а путь к запрошенному файлу
+	return http.createServer(function(request, response)
+	{
+		// Принимает только HEAD и GET
+		if (request.method !== 'HEAD' && request.method !== 'GET')
+		{
+			response.statusCode = 405
+			return response.end()
+		}
 
-  	let file_path
+		// Взять из запрошенного URL'а путь к запрошенному файлу
 
-  	try {
-  		file_path = decodeURIComponent(url.parse(request.url).pathname.slice(1)) || '.'
-  	} catch (error) {
-  		return server_error(error, response)
-  	}
+		let file_path
 
-  	// Путь к запрошенному файлу на диске
-  	file_path = resolve_file_path(root, file_path)
+		try {
+			file_path = decodeURIComponent(url.parse(request.url).pathname.slice(1)) || '.'
+		} catch (error) {
+			return server_error(error, response)
+		}
 
-  	if (!file_path) {
-  		return access_denied(response)
-  	}
+		// Путь к запрошенному файлу на диске
+		file_path = resolve_file_path(root, file_path)
 
-  	find_file(file_path, options.index, root, options, (error, file_path, stats, status) =>
-  	{
-  		if (error) {
-  			return server_error(error, response)
-  		}
+		if (!file_path) {
+			return access_denied(response)
+		}
 
-  		if (!file_path) {
-  			return not_found(response)
-  		}
+		find_file(file_path, options.index || 'index.html', root, options, (error, file_path, stats, status) =>
+		{
+			if (error) {
+				return server_error(error, response)
+			}
 
-  		if (!status)
-  		{
-  			// Если файл не изменился с тех пор,
-  			// как его запрашивали до этого,
-  			// то можно его не пересылать,
-  			// а взять из кеша обозревателя.
-  			if (request.headers["if-modified-since"])
-  			{
-  				if (new Date(request.headers["if-modified-since"]).getTime() === stats.mtime.getTime())
-  				{
-  					response.writeHead(304, { "Last-Modified": stats.mtime.toUTCString() })
-  					return response.end()
-  				}
-  			}
-  		}
+			if (!file_path) {
+				return not_found(response)
+			}
 
-  		// Определить mime-type пересылаемого файла
-  		const mime_type = MIME_TYPE_BY_EXTENSION[path.extname(file_path).slice(1)]
+			if (!status)
+			{
+				// Если файл не изменился с тех пор,
+				// как его запрашивали до этого,
+				// то можно его не пересылать,
+				// а взять из кеша обозревателя.
+				if (request.headers["if-modified-since"])
+				{
+					if (new Date(request.headers["if-modified-since"]).getTime() === stats.mtime.getTime())
+					{
+						response.writeHead(304, { "Last-Modified": stats.mtime.toUTCString() })
+						return response.end()
+					}
+				}
+			}
 
-  		// Заголовки HTTP ответа
-  		response.writeHead(status || 200,
-  		{
-  			"Content-Type"   : mime_type || "application/octet-stream",
-  			"Last-Modified"  : stats.mtime.toUTCString(),
-  			"Cache-Control"  : "public, max-age=604800", // 1 week = 604800 seconds
-  			"Content-Length" : stats.size
-  		})
+			// Определить mime-type пересылаемого файла
+			const mime_type = MIME_TYPE_BY_EXTENSION[path.extname(file_path).slice(1)]
 
-  		// Переслать файл
-  		fs.createReadStream(file_path)
-  			.on('error', error => server_error(error, response))
-  			.pipe(response)
-  	})
-  })
+			// Заголовки HTTP ответа
+			response.writeHead(status || 200,
+			{
+				"Content-Type"   : mime_type || "application/octet-stream",
+				"Last-Modified"  : stats.mtime.toUTCString(),
+				"Cache-Control"  : "public, max-age=604800", // 1 week = 604800 seconds
+				"Content-Length" : stats.size
+			})
+
+			// Переслать файл
+			fs.createReadStream(file_path)
+				.on('error', error => server_error(error, response))
+				.pipe(response)
+		})
+	})
 }
 
 module.exports = createServer
